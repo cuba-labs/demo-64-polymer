@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<queries xmlns="http://schemas.haulmont.com/cuba/rest-queries.xsd">
+    <query name="ordersByStatus" entity="demo$Order" view="_minimal">
+        <jpql><![CDATA[select o from demo$Order o where o.amount > :amountThreshold]]></jpql>
+        <params>
+            <param name="amountThreshold" type="java.math.BigDecimal"/>
+        </params>
+    </query>
+</queries>
