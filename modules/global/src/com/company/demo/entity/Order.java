@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import com.haulmont.chile.core.annotations.NamePattern;
 
-@NamePattern("%s [%s]|createTs,customer")
+@NamePattern("%s|createTs")
 @Table(name = "DEMO_ORDER")
 @Entity(name = "demo$Order")
 public class Order extends StandardEntity {

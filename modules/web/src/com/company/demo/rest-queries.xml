@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <queries xmlns="http://schemas.haulmont.com/cuba/rest-queries.xsd">
     <query name="ordersByAmount" entity="demo$Order" view="_minimal">
-        <jpql><![CDATA[select o from demo$Order o where o.amount > :amountThreshold]]></jpql>
+        <jpql><![CDATA[select o from demo$Order o where o.amount > :minimalAmount]]></jpql>
         <params>
             <param name="minimalAmount" type="java.math.BigDecimal"/>
         </params>
