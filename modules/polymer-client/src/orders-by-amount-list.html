@@ -1,0 +1,93 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/cuba-app/cuba-localize-behavior.html">
+<link rel="import" href="../bower_components/cuba-styles/cuba-styles.html">
+<link rel="import" href="shared-styles.html">
+
+<dom-module id="orders-by-amount-list">
+  <template>
+    <style include="cuba-styles"></style>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <cuba-query id="data"
+                entity-name="demo$Order"
+                query-name="ordersByAmount"
+                params="[[queryParams]]"
+                data="{{entities}}"
+                loading="{{dataLoading}}"
+                provide-count="true"
+                count="{{entitiesCount}}">
+    </cuba-query>
+
+    <paper-toolbar id="toolbar" class="list-toolbar">
+      
+      <div class="filter">
+        <paper-input value="{{queryParams.minimalAmount}}"
+             label="minimalAmount"
+             
+             
+             error-message="[[serverErrors.minimalAmount]]"
+             invalid="[[_isInvalid(serverErrors.minimalAmount)]]">
+</paper-input>
+
+      </div>
+      
+      <span class="title">
+        <paper-spinner active="[[dataLoading]]"></paper-spinner>
+      </span>
+      <paper-icon-button icon="refresh"
+                         on-tap="_reload"></paper-icon-button>
+    </paper-toolbar>
+    <div class="item-list">
+      <template is="dom-repeat" items="{{entities}}">
+        <div class="row">
+          <div class="title">[[item._instanceName]]</div>
+        </div>
+      </template>
+    </div>
+    <template is="dom-if" if="[[moreDataAvailable]]">
+      <paper-button on-tap="_loadMore" class="load-more">
+        Load more
+      </paper-button>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'orders-by-amount-list',
+      behaviors: [CubaLocalizeBehavior],
+      properties: {
+        entities: {
+          type: Array
+        },
+        entitiesCount: {
+          type: Number
+        },
+        moreDataAvailable: {
+          type: Boolean,
+          computed: '_computeMoreDataAvailable(entities, entitiesCount, entities.*)'
+        },
+        queryParams: {
+          type: Object,
+          value: {
+            offset: 0,
+            limit: 10,
+            minimalAmount: null,
+
+          }
+        }
+      },
+      _reload: function() {
+        this.$.data.load();
+      },
+      _loadMore: function() {
+        this.$.data.loadMore();
+      },
+      _computeMoreDataAvailable: function(entities, entitiesCount) {
+        return entities.length < entitiesCount;
+      }
+    });
+  </script>
+</dom-module>

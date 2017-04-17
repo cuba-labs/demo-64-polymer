@@ -1,0 +1,106 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/cuba-app/cuba-localize-behavior.html">
+<link rel="import" href="../../bower_components/cuba-styles/cuba-styles.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="demo-customer-edit.html">
+
+<dom-module id="demo-customer-cards">
+  <template>
+    <style include="cuba-styles"></style>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+      paper-card {
+        cursor: pointer;
+      }
+    </style>
+    <cuba-entities id="data"
+                   entity-name="demo$Customer"
+                   data="{{entities}}"
+                   view="_minimal"
+                   loading="{{dataLoading}}"
+                   limit="10"
+                   provide-count="true"
+                   count="{{entitiesCount}}">
+    </cuba-entities>
+    <demo-customer-edit entity="{{editedEntity}}"
+                          on-commit="_onEditorCommit"
+                          on-cancel="_closeEditor"
+                          on-delete="_deleteEntity"></demo-customer-edit>
+    <template is="dom-if" if="[[!editedEntity]]">
+      <paper-toolbar id="toolbar" class="list-toolbar">
+        <span class="title">
+          <paper-spinner active="[[dataLoading]]"></paper-spinner>
+        </span>
+        <paper-icon-button icon="refresh"
+                           on-tap="_reload"></paper-icon-button>
+        <paper-icon-button icon="add"
+                           on-tap="_create"></paper-icon-button>
+      </paper-toolbar>
+      <template is="dom-repeat" items="{{entities}}">
+        <paper-card heading="[[item._instanceName]]" class="page-widget" on-tap="_edit">
+          <div class="card-content">
+            [[msg('demo$Customer.name')]]: [[item.name]]<br>
+
+          </div>
+        </paper-card>
+      </template>
+      <template is="dom-if" if="[[moreDataAvailable]]">
+        <paper-button on-tap="_loadMore" class="load-more">
+          Load more
+        </paper-button>
+      </template>
+      <paper-toast id="successMessage">[[msg('Successfully saved')]]</paper-toast>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'demo-customer-cards',
+      behaviors: [CubaLocalizeBehavior],
+      properties: {
+        entities: Array,
+        editedEntity: {
+          type: Object,
+          value: null
+        },
+        entitiesCount: {
+          type: Number
+        },
+        moreDataAvailable: {
+          type: Boolean,
+          computed: '_computeMoreDataAvailable(entities, entitiesCount, entities.*)'
+        }
+      },
+      _reload: function() {
+        this.$.data.load();
+      },
+      _loadMore: function() {
+        this.$.data.loadMore();
+      },
+      _computeMoreDataAvailable: function(entities, entitiesCount) {
+        return entities.length < entitiesCount;
+      },
+      _create: function(event) {
+        this.editedEntity = {};
+      },
+      _edit: function(event) {
+        this.editedEntity = event.model.item;
+      },
+      _deleteEntity: function(event, detail) {
+        this.$.data.remove(detail.entity);
+        this._closeEditor();
+      },
+      _onEditorCommit: function(event) {
+        this.$.data.load();
+        this.$.data.loadCount();
+        this._closeEditor();
+        this.$$('#successMessage').show();
+      },
+      _closeEditor: function(event) {
+        this.editedEntity = null;
+      }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,149 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/cuba-app/cuba-localize-behavior.html">
+<link rel="import" href="../../bower_components/cuba-styles/cuba-styles.html">
+<link rel="import" href="../shared-styles.html">
+<link rel="import" href="demo-order-edit.html">
+
+<dom-module id="demo-order-list">
+  <template>
+    <style include="cuba-styles"></style>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+      paper-dialog#editDialog {
+        max-width: 720px;
+        width: 100%;
+        --paper-dialog: {
+          margin: 0;
+        }
+      }
+    </style>
+    <cuba-entities id="data"
+                   entity-name="demo$Order"
+                   data="{{entities}}"
+                   view="_local"
+                   loading="{{dataLoading}}"
+                   limit="10"
+                   provide-count="true"
+                   count="{{entitiesCount}}">
+    </cuba-entities>
+    <paper-toolbar id="toolbar" class="list-toolbar">
+        <span class="title">
+          <paper-spinner active="[[dataLoading]]"></paper-spinner>
+        </span>
+        <paper-icon-button icon="refresh"
+                           on-tap="_reload"></paper-icon-button>
+        <paper-icon-button icon="add"
+                           on-tap="_create"></paper-icon-button>
+    </paper-toolbar>
+    <div class="item-list">
+      <template is="dom-repeat" items="{{entities}}">
+        <div class="row">
+          <div class="title">[[item._instanceName]]</div>
+          <div class="description">[[msg('demo$Order.date')]]: [[item.date]] 
+
+[[msg('demo$Order.amount')]]: [[item.amount]] 
+
+[[msg('demo$Order.status')]]: [[item.status]] 
+
+
+          </div>
+          <div class="actions">
+            <paper-menu-button>
+              <paper-icon-button icon="more-vert" class="dropdown-trigger"></paper-icon-button>
+              <paper-menu class="dropdown-content" style="padding:0;">
+                <paper-item on-tap="_edit">Edit</paper-item>
+                <paper-item on-tap="_delete">Delete</paper-item>
+              </paper-menu>
+            </paper-menu-button>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <template is="dom-if" if="[[moreDataAvailable]]">
+      <paper-button on-tap="_loadMore" class="load-more">
+        Load more
+      </paper-button>
+    </template>
+
+    <paper-dialog id="editDialog">
+      <paper-dialog-scrollable>
+        <demo-order-edit id="editor"
+                              entity="{{editedEntity}}"
+                              on-commit="_onEditorCommit"
+                              on-error="_onEditorError"></demo-order-edit>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button on-tap="_closeEditor">
+          [[msg('Cancel')]]
+        </paper-button>
+        <paper-button on-tap="_save">
+          [[msg('Save')]]
+        </paper-button>
+      </div>
+    </paper-dialog>
+
+    <paper-toast id="successMessage">[[msg('Successfully saved')]]</paper-toast>
+    <paper-toast id="errorMessage">[[msg('Failed to save')]]</paper-toast>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'demo-order-list',
+      behaviors: [CubaLocalizeBehavior],
+      properties: {
+        entities: Array,
+        editedEntity: {
+          type: Object,
+          value: null
+        },
+        entitiesCount: {
+          type: Number
+        },
+        moreDataAvailable: {
+          type: Boolean,
+          computed: '_computeMoreDataAvailable(entities, entitiesCount, entities.*)'
+        }
+      },
+      _reload: function() {
+        this.$.data.load();
+      },
+      _loadMore: function() {
+        this.$.data.loadMore();
+      },
+      _computeMoreDataAvailable: function(entities, entitiesCount) {
+        return entities.length < entitiesCount;
+      },
+      _create: function(event) {
+        this.editedEntity = {};
+        this.$.editDialog.open();
+      },
+      _edit: function(event) {
+        this.editedEntity = event.model.item;
+        this.$.editDialog.open();
+      },
+      _save: function() {
+        this.$.editor.save();
+      },
+      _delete: function(event) {
+        this.$.data.remove(event.model.item);
+        this._closeEditor();
+      },
+      _onEditorCommit: function(event) {
+        this.$.data.load();
+        this._closeEditor();
+        this.$.successMessage.show();
+      },
+      _onEditorError: function(event) {
+        this.$.errorMessage.show();
+      },
+      _closeEditor: function(event) {
+        this.$.editDialog.close();
+        this.editedEntity = null;
+      }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,93 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/cuba-app/cuba-localize-behavior.html">
+<link rel="import" href="../../bower_components/cuba-styles/cuba-styles.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="demo-customer-edit">
+  <template>
+    <style include="cuba-styles"></style>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+      paper-card {
+        display: block;
+      }
+    </style>
+    <template is="dom-if" if="[[entity]]" restamp="true">
+      <cuba-entity entity-name="demo$Customer" entity-id="[[entity.id]]" view="_local" data="{{entity}}"></cuba-entity>
+      <cuba-entity-form id="form"
+                        entity-name="demo$Customer"
+                        entity="{{entity}}"
+                        on-cuba-form-response="_onSuccess"
+                        on-cuba-form-error="_onError"
+                        server-errors="{{serverErrors}}">
+        <paper-card>
+          <div class="card-content">
+            <paper-input value="{{entity.name}}"
+             label="[[msg('demo$Customer.name')]]"
+             required
+             maxlength="255"
+             error-message="[[serverErrors.name]]"
+             invalid="[[_isInvalid(serverErrors.name)]]">
+</paper-input>
+<paper-input value="{{entity.email}}"
+             label="[[msg('demo$Customer.email')]]"
+             
+             maxlength="255"
+             error-message="[[serverErrors.email]]"
+             invalid="[[_isInvalid(serverErrors.email)]]">
+</paper-input>
+
+          </div>
+          <div class="card-actions">
+            <template is="dom-if" if="[[entity.id]]">
+            <paper-button on-tap="_delete">
+              [[msg('Delete')]]
+            </paper-button>
+            </template>
+            <paper-button on-tap="_cancel">
+              [[msg('Cancel')]]
+            </paper-button>
+            <paper-button on-tap="_save">
+              [[msg('Save')]]
+            </paper-button>
+          </div>
+        </paper-card>
+      </cuba-entity-form>
+      <paper-toast id="errorMessage">[[msg('Failed to save')]]</paper-toast>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'demo-customer-edit',
+      behaviors: [CubaLocalizeBehavior],
+      properties: {
+        entity: {
+          type: Object,
+          value: null
+        }
+      },
+      _save: function() {
+        this.$$('#form').submit();
+      },
+      _onSuccess: function() {
+        this.fire("commit");
+      },
+      _onError: function() {
+        this.$$('#errorMessage').show();
+      },
+      _cancel: function() {
+        this.set("serverErrors", {});
+        this.fire("cancel");
+      },
+      _delete: function() {
+        this.fire("delete", {entity: this.entity});
+      },
+      _isInvalid: function(err) {
+        return typeof err !== 'undefined';
+      }
+    });
+  </script>
+</dom-module>

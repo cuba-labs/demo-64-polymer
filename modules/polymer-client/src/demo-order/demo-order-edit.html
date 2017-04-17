@@ -1,0 +1,85 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/cuba-app/cuba-localize-behavior.html">
+<link rel="import" href="../../bower_components/cuba-styles/cuba-styles.html">
+<link rel="import" href="../shared-styles.html">
+
+<dom-module id="demo-order-edit">
+  <template>
+    <style include="cuba-styles"></style>
+    <style include="shared-styles"></style>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <template is="dom-if" if="[[entity]]" restamp="true">
+      <cuba-entity entity-name="demo$Order" entity-id="[[entity.id]]" view="order-edit" data="{{entity}}"></cuba-entity>
+      <cuba-entity-form id="form"
+                        entity-name="demo$Order"
+                        entity="{{entity}}"
+                        on-cuba-form-response="_onSuccess"
+                        on-cuba-form-error="_onError"
+                        server-errors="{{serverErrors}}">
+        <div class="form-content">
+          <vaadin-date-picker value="{{entity.date}}"
+                    label="[[msg('demo$Order.date')]]"
+                    
+                    error-message="[[serverErrors.date]]"
+                    invalid="[[_isInvalid(serverErrors.date)]]">
+</vaadin-date-picker>
+<paper-input type="number"
+             value="{{entity.amount}}"
+             label="[[msg('demo$Order.amount')]]"
+             step="any"
+             
+             error-message="[[serverErrors.amount]]"
+             invalid="[[_isInvalid(serverErrors.amount)]]">
+</paper-input>
+<vaadin-combo-box label="[[msg('demo$Order.status')]]"
+                  items="[[enumValues('com.company.demo.entity.OrderStatus')]]"
+                  value="{{entity.status}}"
+                  error-message="[[serverErrors.status]]"
+                  invalid="[[_isInvalid(serverErrors.status)]]"
+                  >
+</vaadin-combo-box>
+<cuba-entities entity-name="demo$Customer" view="_minimal" data="{{entity_customerOptions}}"></cuba-entities>
+<vaadin-combo-box label="[[msg('demo$Order.customer')]]"
+                  items="[[entity_customerOptions]]"
+                  selected-item="{{entity.customer}}"
+                  item-label-path="_instanceName"
+                  item-value-path="id"
+                  value="[[entity.customer.id]]"
+                  
+                  error-message="[[serverErrors.customer]]"
+                  invalid="[[_isInvalid(serverErrors.customer)]]">
+</vaadin-combo-box>
+
+        </div>
+      </cuba-entity-form>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'demo-order-edit',
+      behaviors: [CubaLocalizeBehavior],
+      properties: {
+        entity: {
+          type: Object,
+          value: null
+        }
+      },
+      save: function() {
+        this.$$('#form').submit();
+      },
+      _onSuccess: function() {
+        this.fire("commit");
+      },
+      _onError: function() {
+        this.fire("error");
+      },
+      _isInvalid: function(err) {
+        return typeof err !== 'undefined';
+      }
+    });
+  </script>
+</dom-module>
